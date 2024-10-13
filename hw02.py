@@ -482,27 +482,58 @@ def test_xval_learning_alg(xval_learning_alg,perceptron):
 # Your code is written below
 
 def perceptron(data, labels, params={}, hook=None):
+    #data is a numpy array of dimension d by n
+    # labels is numpy array of dimension 1 by n
     # if T not in params, default to 100
+
     T = params.get('T', 100)
-    # Your implementation here
-    pass
+    d,n = np.shape(data)
+    theta = np.zeros((d, 1))
+    theta_0 = np.array([[0]])
+
+    for t in range(T):
+        for i in range(n):
+            y_i = labels[0, i]
+            x_i = data[:, i:i+1]
+            value = (np.dot(theta.T, x_i) + theta_0) * y_i
+            if value <= 0:
+                theta = theta + y_i * x_i
+                theta_0 = theta_0 + y_i
+            
+    return (theta, theta_0)
+
 
 #Visualization of perceptron, comment in the next three lines to see your perceptron code in action:
-'''
-for datafn in (super_simple_separable_through_origin,super_simple_separable):
-   data, labels = datafn()
-   test_linear_classifier(datafn,perceptron,draw=True)
-'''
+# for datafn in (super_simple_separable_through_origin,super_simple_separable):
+#    data, labels = datafn()
+#    test_linear_classifier(datafn,perceptron,draw=True)
 
 #Test Cases:
-#test_perceptron(perceptron)
+# test_perceptron(perceptron)
 
 
 def averaged_perceptron(data, labels, params={}, hook=None):
-    # if T not in params, default to 100
     T = params.get('T', 100)
-    # Your implementation here
-    pass
+    d,n = np.shape(data)
+    theta = np.zeros((d, 1))
+    theta_0 = np.array([[0]])
+
+    thetas = np.zeros((d, 1))
+    theta_0s = np.array([[0]])
+
+    for t in range(T):
+        for i in range(n):
+            y_i = labels[0, i]
+            x_i = data[:, i:i+1]
+            value = (np.dot(theta.T, x_i) + theta_0) * y_i
+            if value <= 0:
+                theta = theta + y_i * x_i
+                theta_0 = theta_0 + y_i
+
+            thetas = thetas + theta
+            theta_0s = theta_0s + theta_0
+            
+    return (thetas / (n * T), theta_0s / (n * T))
 
 # Visualization of Averaged Perceptron:
 '''
@@ -512,29 +543,69 @@ for datafn in (super_simple_separable, xor, xor_more, big_higher_dim_separable):
 '''
 
 #Test Cases:
-#test_averaged_perceptron(averaged_perceptron)
+# test_averaged_perceptron(averaged_perceptron)
 
 def eval_classifier(learner, data_train, labels_train, data_test, labels_test):
-    pass
+    (theta, theta0) = learner(data_train, labels_train)
+    correct = score(data_test, labels_test, theta, theta0)
+    data_test_count = np.shape(data_test)[1]
+    return correct / data_test_count
 
 #Test cases:
-#test_eval_classifier(eval_classifier,perceptron)
+# test_eval_classifier(eval_classifier,perceptron)
 
 
 def eval_learning_alg(learner, data_gen, n_train, n_test, it):
-    pass
+    sum_score = 0
+    for i in range(it):
+        (data, labels) = data_gen(n_train)
+        (data_test, label_test) = data_gen(n_test)
+        sum_score += eval_classifier(learner, data, labels, data_test, label_test)
+    
+    return sum_score / it
+
+def eval_learning_alg_on_training_data(learner, data_gen, n_train, n_test, it):
+    sum_score = 0
+    for i in range(it):
+        (data, labels) = data_gen(n_train)
+        # evaluates on training data
+        (data_test, label_test) = (data, labels)
+        sum_score += eval_classifier(learner, data, labels, data_test, label_test)
+    
+    return sum_score / it
 
 #Test cases:
-#test_eval_learning_alg(eval_learning_alg,perceptron)
+# test_eval_learning_alg(eval_learning_alg,perceptron)
 
 
 def xval_learning_alg(learner, data, labels, k):
-    pass
+    data_chunks = np.array_split(data, k, axis=1)
+    label_chunks = np.array_split(labels, k, axis=1)
+    sum_score = 0
+    for j in range(k):
+        data_j = np.concatenate(data_chunks[:j] + data_chunks[j+1:], axis=1)
+        label_j = np.concatenate(label_chunks[:j] + label_chunks[j+1:], axis=1)
+        sum_score += eval_classifier(learner, data_j, label_j, data_chunks[j], label_chunks[j])
+
+    return sum_score / k
+
 
 #Test cases:
 #test_xval_learning_alg(xval_learning_alg,perceptron)
 
 
 #For problem 10, here is an example of how to use gen_flipped_lin_separable, in this case with a flip probability of 50%
-#print(eval_learning_alg(perceptron, gen_flipped_lin_separable(pflip=.5), 20, 20, 5))
+print("Evaluating accuraccy using eval_learning_alg:")
+print("perceptron, pflip=0.1, accuracy={}".format(eval_learning_alg(perceptron, gen_flipped_lin_separable(pflip=.1), 20, 20, 1000)))
+print("averaged_perceptron, pflip=0.1, accuracy={}".format(eval_learning_alg(averaged_perceptron, gen_flipped_lin_separable(pflip=.1), 20, 20, 1000)))
+print("perceptron, pflip=0.25, accuracy={}".format(eval_learning_alg(perceptron, gen_flipped_lin_separable(pflip=.25), 20, 20, 1000)))
+print("averaged_perceptron, pflip=0.25, accuracy={}".format(eval_learning_alg(averaged_perceptron, gen_flipped_lin_separable(pflip=.25), 20, 20, 1000)))
+
+print("----")
+
+print("Evaluating accuraccy using eval_learning_alg_on_training_data:")
+print("perceptron, pflip=0.1, accuracy={}".format(eval_learning_alg_on_training_data(perceptron, gen_flipped_lin_separable(pflip=.1), 20, 20, 1000)))
+print("averaged_perceptron, pflip=0.1, accuracy={}".format(eval_learning_alg_on_training_data(averaged_perceptron, gen_flipped_lin_separable(pflip=.1), 20, 20, 1000)))
+print("perceptron, pflip=0.25, accuracy={}".format(eval_learning_alg_on_training_data(perceptron, gen_flipped_lin_separable(pflip=.25), 20, 20, 1000)))
+print("averaged_perceptron, pflip=0.25, accuracy={}".format(eval_learning_alg_on_training_data(averaged_perceptron, gen_flipped_lin_separable(pflip=.25), 20, 20, 1000)))
 
