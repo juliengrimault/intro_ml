@@ -499,6 +499,8 @@ def perceptron(data, labels, params={}, hook=None):
             if value <= 0:
                 theta = theta + y_i * x_i
                 theta_0 = theta_0 + y_i
+                if hook != None:
+                    hook((theta, theta_0))
             
     return (theta, theta_0)
 
@@ -595,17 +597,17 @@ def xval_learning_alg(learner, data, labels, k):
 
 
 #For problem 10, here is an example of how to use gen_flipped_lin_separable, in this case with a flip probability of 50%
-print("Evaluating accuraccy using eval_learning_alg:")
-print("perceptron, pflip=0.1, accuracy={}".format(eval_learning_alg(perceptron, gen_flipped_lin_separable(pflip=.1), 20, 20, 1000)))
-print("averaged_perceptron, pflip=0.1, accuracy={}".format(eval_learning_alg(averaged_perceptron, gen_flipped_lin_separable(pflip=.1), 20, 20, 1000)))
-print("perceptron, pflip=0.25, accuracy={}".format(eval_learning_alg(perceptron, gen_flipped_lin_separable(pflip=.25), 20, 20, 1000)))
-print("averaged_perceptron, pflip=0.25, accuracy={}".format(eval_learning_alg(averaged_perceptron, gen_flipped_lin_separable(pflip=.25), 20, 20, 1000)))
+# print("Evaluating accuraccy using eval_learning_alg:")
+# print("perceptron, pflip=0.1, accuracy={}".format(eval_learning_alg(perceptron, gen_flipped_lin_separable(pflip=.1), 20, 20, 1000)))
+# print("averaged_perceptron, pflip=0.1, accuracy={}".format(eval_learning_alg(averaged_perceptron, gen_flipped_lin_separable(pflip=.1), 20, 20, 1000)))
+# print("perceptron, pflip=0.25, accuracy={}".format(eval_learning_alg(perceptron, gen_flipped_lin_separable(pflip=.25), 20, 20, 1000)))
+# print("averaged_perceptron, pflip=0.25, accuracy={}".format(eval_learning_alg(averaged_perceptron, gen_flipped_lin_separable(pflip=.25), 20, 20, 1000)))
 
-print("----")
+# print("----")
 
-print("Evaluating accuraccy using eval_learning_alg_on_training_data:")
-print("perceptron, pflip=0.1, accuracy={}".format(eval_learning_alg_on_training_data(perceptron, gen_flipped_lin_separable(pflip=.1), 20, 20, 1000)))
-print("averaged_perceptron, pflip=0.1, accuracy={}".format(eval_learning_alg_on_training_data(averaged_perceptron, gen_flipped_lin_separable(pflip=.1), 20, 20, 1000)))
-print("perceptron, pflip=0.25, accuracy={}".format(eval_learning_alg_on_training_data(perceptron, gen_flipped_lin_separable(pflip=.25), 20, 20, 1000)))
-print("averaged_perceptron, pflip=0.25, accuracy={}".format(eval_learning_alg_on_training_data(averaged_perceptron, gen_flipped_lin_separable(pflip=.25), 20, 20, 1000)))
+# print("Evaluating accuraccy using eval_learning_alg_on_training_data:")
+# print("perceptron, pflip=0.1, accuracy={}".format(eval_learning_alg_on_training_data(perceptron, gen_flipped_lin_separable(pflip=.1), 20, 20, 1000)))
+# print("averaged_perceptron, pflip=0.1, accuracy={}".format(eval_learning_alg_on_training_data(averaged_perceptron, gen_flipped_lin_separable(pflip=.1), 20, 20, 1000)))
+# print("perceptron, pflip=0.25, accuracy={}".format(eval_learning_alg_on_training_data(perceptron, gen_flipped_lin_separable(pflip=.25), 20, 20, 1000)))
+# print("averaged_perceptron, pflip=0.25, accuracy={}".format(eval_learning_alg_on_training_data(averaged_perceptron, gen_flipped_lin_separable(pflip=.25), 20, 20, 1000)))
 
