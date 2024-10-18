@@ -43,7 +43,33 @@ if False:                               # set to True to see histograms
 # Analyze auto data
 #-------------------------------------------------------------------------------
 
-# Your code here to process the auto data
+features2 = [('cylinders', hw3.one_hot),
+            ('displacement', hw3.standard),
+            ('horsepower', hw3.standard),
+            ('weight', hw3.standard),
+            ('acceleration', hw3.standard),
+            ## Drop model_year by default
+            ## ('model_year', hw3.raw),
+            ('origin', hw3.one_hot)]
+
+features3 = [('cylinders', hw3.one_hot),
+            ('weight', hw3.standard),
+            ]
+for (feature_name, f) in { 'all_raw': features, 'features2': features2, 'features3': features3 }.items():
+    data, labels = hw3.auto_data_and_labels(auto_data_all, f)
+    for T in [1, 10, 50]:
+        for alg_name, alg in { 'perceptron': hw3.perceptron, 'averaged_perceptron': hw3.averaged_perceptron }.items():
+            score = hw3.xval_learning_alg(alg, data, labels, k=10, T=T)
+            print("[{}, T={}, {}] score={}".format(feature_name, T, alg_name, score))
+
+data2, labels2 = hw3.auto_data_and_labels(auto_data_all, features2)
+th, th0 = hw3.averaged_perceptron(data, labels, {'T': 10})
+print(th, th0)
+
+# 4.2 B) (Optional) Is there any set of two features you can use to attain comparable results as your best accuracy? What are they?
+# features 3, use the 2 features from features2 with the highest coefficients, i.e cyclinders and weight
+
+print('--------------------------------------------------------')
 
 #-------------------------------------------------------------------------------
 # Review Data

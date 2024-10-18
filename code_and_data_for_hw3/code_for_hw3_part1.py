@@ -253,7 +253,7 @@ def test_with_features(dataFun, order = 2, draw=True, pause=True):
 # labels is dimension 1 by n
 # T is a positive integer number of steps to run
 def perceptron(data, labels, params = {}, hook = None):
-    T = params.get('T', 100)
+    T = params.get('T', 1000)
     (d, n) = data.shape
     m = 0
     theta = np.zeros((d, 1)); theta_0 = np.zeros((1, 1))
@@ -307,3 +307,16 @@ print(features_counts)
 ######################################################################
 #   Example for part 3B) test_with_features()
 #test_with_features(super_simple_separable, 2, draw=True, pause=True)
+
+print("--------")
+print("super_simple_separable_through_origin")
+test_with_features(super_simple_separable_through_origin, order=1, draw=False, pause=False)
+
+print("super_simple_separable")
+test_with_features(super_simple_separable, order=1, draw=False, pause=False)
+
+print("xor")
+test_with_features(xor, order=2, draw=False, pause=False)
+
+print("xor_more")
+test_with_features(xor_more, order=3, draw=False, pause=False)

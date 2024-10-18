@@ -191,7 +191,7 @@ def eval_classifier(learner, data_train, labels_train, data_test, labels_test):
     th, th0 = learner(data_train, labels_train)
     return score(data_test, labels_test, th, th0)/data_test.shape[1]
 
-def xval_learning_alg(learner, data, labels, k):
+def xval_learning_alg(learner, data, labels, k, T=None):
     _, n = data.shape
     idx = list(range(n))
     np.random.seed(0)
@@ -201,13 +201,20 @@ def xval_learning_alg(learner, data, labels, k):
     s_data = np.array_split(data, k, axis=1)
     s_labels = np.array_split(labels, k, axis=1)
 
+    params = {}
+    if T != None:
+        params['T'] = T
+
+    def l(data, labels):
+        return learner(data, labels, params)
+
     score_sum = 0
     for i in range(k):
         data_train = np.concatenate(s_data[:i] + s_data[i+1:], axis=1)
         labels_train = np.concatenate(s_labels[:i] + s_labels[i+1:], axis=1)
         data_test = np.array(s_data[i])
         labels_test = np.array(s_labels[i])
-        score_sum += eval_classifier(learner, data_train, labels_train,
+        score_sum += eval_classifier(l, data_train, labels_train,
                                               data_test, labels_test)
     return score_sum/k
 
