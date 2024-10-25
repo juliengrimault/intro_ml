@@ -389,7 +389,7 @@ def get_classification_accuracy(data, labels):
     @param data (d,n) array
     @param labels (1,n) array
     """
-    return xval_learning_alg(lambda data, labels: perceptron(data, labels, {"T": 50}), data, labels, 10)
+    return xval_learning_alg(perceptron, data, labels, 10, T=50)
 
 
 def load_mnist_data(labels):

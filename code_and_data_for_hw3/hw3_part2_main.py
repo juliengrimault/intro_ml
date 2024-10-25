@@ -55,16 +55,16 @@ features2 = [('cylinders', hw3.one_hot),
 features3 = [('cylinders', hw3.one_hot),
             ('weight', hw3.standard),
             ]
-for (feature_name, f) in { 'all_raw': features, 'features2': features2, 'features3': features3 }.items():
-    data, labels = hw3.auto_data_and_labels(auto_data_all, f)
-    for T in [1, 10, 50]:
-        for alg_name, alg in { 'perceptron': hw3.perceptron, 'averaged_perceptron': hw3.averaged_perceptron }.items():
-            score = hw3.xval_learning_alg(alg, data, labels, k=10, T=T)
-            print("[{}, T={}, {}] score={}".format(feature_name, T, alg_name, score))
+# for (feature_name, f) in { 'all_raw': features, 'features2': features2, 'features3': features3 }.items():
+#     data, labels = hw3.auto_data_and_labels(auto_data_all, f)
+#     for T in [1, 10, 50]:
+#         for alg_name, alg in { 'perceptron': hw3.perceptron, 'averaged_perceptron': hw3.averaged_perceptron }.items():
+#             score = hw3.xval_learning_alg(alg, data, labels, k=10, T=T)
+#             print("[{}, T={}, {}] score={}".format(feature_name, T, alg_name, score))
 
-data2, labels2 = hw3.auto_data_and_labels(auto_data_all, features2)
-th, th0 = hw3.averaged_perceptron(data, labels, {'T': 10})
-print(th, th0)
+# data2, labels2 = hw3.auto_data_and_labels(auto_data_all, features2)
+# th, th0 = hw3.averaged_perceptron(data, labels, {'T': 10})
+# print(th, th0)
 
 # 4.2 B) (Optional) Is there any set of two features you can use to attain comparable results as your best accuracy? What are they?
 # features 3, use the 2 features from features2 with the highest coefficients, i.e cyclinders and weight
@@ -94,8 +94,43 @@ print('review_bow_data and labels shape', review_bow_data.shape, review_labels.s
 # Analyze review data
 #-------------------------------------------------------------------------------
 
-# Your code here to process the review data
+print("")
+print("")
+print("")
+print("----> Review Data")
+print("------------------------------------------------")
 
+# for T in [1, 10, 50]:
+#     for alg_name, alg in { 'perceptron': hw3.perceptron, 'averaged_perceptron': hw3.averaged_perceptron }.items():
+#         score = hw3.xval_learning_alg(alg, review_bow_data, review_labels, k=10, T=T)
+#         print("[T={}, {}] score={}".format(T, alg_name, score))
+
+# th, th0 = hw3.averaged_perceptron(review_bow_data, review_labels, {'T': 10})
+
+def find_max_values(th, k=10):
+    index_to_words_map = hw3.reverse_dict(dictionary)
+
+    best = []
+    worst = []
+    n = np.shape(th)[0]
+
+    for i in range(n):
+        word = index_to_words_map[i]
+        best.append((word, th[i, 0]))
+        worst.append((word, th[i, 0]))
+        if len(best) > k:
+            best.sort(key=lambda x: x[1])
+            del best[0]
+
+        if len(worst) > k:
+            worst.sort(key=lambda x: x[1])
+            del worst[-1]
+    
+    best.sort(key=lambda x: x[1])
+    worst.sort(key=lambda x: x[1])
+    return (list(map(lambda x: x[0], best)), list(map(lambda x: x[0], worst)))
+
+# print(find_max_values(th, k=10))
 #-------------------------------------------------------------------------------
 # MNIST Data
 #-------------------------------------------------------------------------------
@@ -119,22 +154,28 @@ mnist_data_all = hw3.load_mnist_data(range(10))
 print('mnist_data_all loaded. shape of single images is', mnist_data_all[0]["images"][0].shape)
 
 # HINT: change the [0] and [1] if you want to access different images
-d0 = mnist_data_all[0]["images"]
-d1 = mnist_data_all[1]["images"]
-y0 = np.repeat(-1, len(d0)).reshape(1,-1)
-y1 = np.repeat(1, len(d1)).reshape(1,-1)
+def generate_data_labels(idx1, idx2):
+    d0 = mnist_data_all[idx1]["images"]
+    d1 = mnist_data_all[idx2]["images"]
+    y0 = np.repeat(-1, len(d0)).reshape(1,-1)
+    y1 = np.repeat(1, len(d1)).reshape(1,-1)
 
-# data goes into the feature computation functions
-data = np.vstack((d0, d1))
-# labels can directly go into the perceptron algorithm
-labels = np.vstack((y0.T, y1.T)).T
+    # data goes into the feature computation functions
+    data = np.vstack((d0, d1))
+    # labels can directly go into the perceptron algorithm
+    labels = np.vstack((y0.T, y1.T)).T
+
+    return (data, labels)
+
 
 def raw_mnist_features(x):
     """
     @param x (n_samples,m,n) array with values in (0,1)
     @return (m*n,n_samples) reshaped array where each entry is preserved
     """
-    raise Exception("implement me!")
+    (n_samples,m,n) = np.shape(x)
+    result = x.reshape(n_samples, m * n).T
+    return result
 
 def row_average_features(x):
     """
@@ -143,7 +184,8 @@ def row_average_features(x):
     @param x (n_samples,m,n) array with values in (0,1)
     @return (m,n_samples) array where each entry is the average of a row
     """
-    raise Exception("modify me!")
+    result = np.average(x, axis=2).T
+    return result
 
 
 def col_average_features(x):
@@ -153,8 +195,8 @@ def col_average_features(x):
     @param x (n_samples,m,n) array with values in (0,1)
     @return (n,n_samples) array where each entry is the average of a column
     """
-    raise Exception("modify me!")
-
+    result = np.average(x, axis=1).T
+    return result
 
 def top_bottom_features(x):
     """
@@ -166,14 +208,35 @@ def top_bottom_features(x):
     and the second entry is the average of the bottom half of the image
     = rows floor(m/2) [inclusive] to m
     """
-    raise Exception("modify me!")
-
-# use this function to evaluate accuracy
-acc = hw3.get_classification_accuracy(raw_mnist_features(data), labels)
+    n = np.shape(x)[0]
+    mid = np.shape(x)[1] // 2
+    top = np.average(x[:, :mid], axis=(1,2), keepdims=True).reshape(n ,1)
+    bottom = np.average(x[:, mid:], axis=(1,2), keepdims=True).reshape(n ,1)
+    result = np.concatenate([top, bottom], axis=1).T
+    return result
+    
 
 #-------------------------------------------------------------------------------
 # Analyze MNIST data
 #-------------------------------------------------------------------------------
 
-# Your code here to process the MNIST data
+to_test = {
+    '0 vs 1': generate_data_labels(0, 1),
+    '2 vs 4': generate_data_labels(2, 4),
+    '6 vs 8': generate_data_labels(6, 8),
+    '9 vs 0': generate_data_labels(9, 0),
+}
+
+for (title, (data, labels)) in to_test.items():
+    for (feature_method, feature) in [('row', row_average_features), ('col', col_average_features), ('top_bottom', top_bottom_features)]:
+        processed_data = feature(data)
+        acc = hw3.get_classification_accuracy(processed_data, labels)
+        print("{}, {}: {}".format(title, feature_method, acc))
+    
+    print("---")
+
+
+# 6.2F) (Optional) What does it mean if a binary classification accuracy is below 0.5, if your dataset is balanced (same number from each class)? Are these datasets balanced?
+# it means it's random
+
 
